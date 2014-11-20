@@ -44,8 +44,8 @@ colnames(counts)
 
 #Merge
 merged <- merge(SOMclusters, counts, by = "Gene_ID")
-#set row and column names R
 
+#set row and column names R
 #remove rows that the have duplicate gene names.
 dim(merged)
 countsUniq <- unique(merged)
@@ -53,8 +53,8 @@ dim(countsUniq)
 head(countsUniq)
 rownames(countsUniq) 
 
-#Why did we lose over half.  There should not be duplicates within each 
-#type of cluster.  Check into this.
+#Why did we lose over half.  There should not be duplicates within 
+#each type of cluster.  Check into this.
 
 write.csv(countsUniq, file = "countsUniq.csv", row.names = FALSE)
 countsUniq <- read.csv("countsUniq.csv", row.name = 1)
@@ -62,16 +62,16 @@ countsUniq <- read.csv("countsUniq.csv", row.name = 1)
 counts <- countsUniq 
 counts[is.na(counts)] <- 0
 
-#transform data frame
-colnames(counts)
-genes=rownames(counts) #setting the genes names, 
+#for later
+genes <- rownames(counts) #setting the genes names, 
 
+#transform data frame
 counts.t <- t(counts)
 str(counts.t)
 head(counts.t)
 
 #counts[, c(2:64)] <- sapply(counts[, c(2:64)], as.numeric)
-#counts.lt=t(log(counts+1)) #Is this if you didn't normalize yet??
+#counts.lt=t(log(counts+1)) 
 
 ############################################################
 ## Bootstrapping for hub gene prediction
@@ -108,9 +108,9 @@ for (i in 1:B){
   result[,i]<-rank(-hub.b)
 }
 
-#gene annotation
+#gene annotation from yasu script
 #annotation <- read.csv("Dodder_cdhitest95_TAIR_Blast2GO_annotation.csv", header=TRUE)
-#esult.a<-merge(result.g,annotation, by.x="row.names", by.y="Sequence_name", all.x=T,sort=F)
+#result.a<-merge(result.g,annotation, by.x="row.names", by.y="Sequence_name", all.x=T,sort=F)
 #write.csv(result.a,paste("boot",B,".WGCNA.hub.csv",sep=""))
 
 #Annotation Files
@@ -127,21 +127,24 @@ head(sub.annotation)
  
 # #Merge with genes then call which column of genes you want.
 table.genes <- as.data.frame(genes)
-head(table.genes)
 dim(table.genes) #check first
+head(table.genes)
 colnames(table.genes) <- "ITAG"
-annotation <- merge(table.genes,sub.annotation, by = "ITAG", all.x = TRUE)
-dim(annotation) #compare and check with above.  Same.
-head(annotation)
-genes2 <- annotation$symbol
-#genes2[is.na(genes2)] <- "NotAvailable"
 
-genes2[duplicated(genes2)]
+annotation.merge <- merge(table.genes,sub.annotation, by = "ITAG", all.x = TRUE)
+dim(annotation.merge) #compare and check with above.  
+head(annotation.merge)
 
+str(annotation.merge$symbol)
+is.na(annotation.merge$symbol)
 
-#str(genes2)
-#head(genes)
-#str(genes)
+annotation.merge$gene.name <- ifelse(is.na(annotation.merge$symbol), 
+                                     annotation.merge$ITAG, 
+                                     annotation.merge$symbol)
+  
+genes2 <- annotation.merge$gene.name
+
+head(genes2)
 
 genes <- genes2
 
@@ -214,6 +217,7 @@ plot(subnet,
      edge.color="gray57", 
      edge.width=E(subnet)$weight*0.1)
 dev.off()
+
 
 ######################################
 
