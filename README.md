@@ -1,35 +1,34 @@
-#Analysis Key
+#Using WGNCA to build co-expression network
 
-##WGCNA.bootstrap.Ciera.11.18.14.R
-This is setting up the map.  
+The purpose of performing network analysis is to test if the biologically relevant clusters found in SOM analysis are 1. confirmed with external data 2. use this external data to strengthen and deepen our understanding of the co-expression of these genes. 
 
-##WGCNA.bootstrap.Ciera.11.21.14.R
+The main way I am approaching these aims is to extract the relevant genes from SOM analysis and use the count data from either [Yasu's paper](http://www.pnas.org/content/111/25/E2616.short) and [Dan Koenig's paper](http://www.pnas.org/content/110/28/E2655.short).
 
+There are many ways to approach these tasks, but the main variable to test are:
 
-##To Do
+1. Different Data sets (Dan's and Yasu's)
+2. Limit clusters that are relevant (starting gene number)
+3. Limit samples within the data set (isolate samples: species, dev. stage, ect.)
+4. WGCNA conditions
 
-1. Try without the all the species data
-2. Try with different clusters 
-3. Need to define cluster number with colors
-4. Try with larger Tomato dataset
+##Analysis Key
 
+###Analysis
 
-##Analysis
+`WGNCNA.Ciera.04072015.Experiment1`: Experiment one.  In order to visualize what is going on in the network and understand if co-expression is occurring in other datasets, I will attempt to build adjacency network and color by SOM cluster.  
 
-`WGNCNA.Ciera.04072015.Experiment1`: Experment one.  In order to visualize what is going on in the network and understand if co-expression is occuring in other datasets, I will attempt to build adjaceny network and color by SOM cluster.  
-
-`WGNCNA.Ciera.04062015.tutorialGuided.R`: I decided to start from the begining, since it is too much trouble to troubleshoot Yasu's script.  This my first attempt guided by tutorial.
+`WGNCNA.Ciera.04062015.tutorialGuided.R`: I decided to start from the beginning, since it is too much trouble to troubleshoot Yasu's script.  This my first attempt guided by tutorial.
 
 `WGCNA.bootstrap.Ciera.03.27.15.c`: **Finally got it working again.**
 
 Data: Yasu's
 Clusters: basic SOM, cluster 35.
 
-4.06.15 update: So I came back after a week to figure out what the problem is.  So basically I kept getting this "character" error and I traced it to the transformation `t()` step. I did some work and added another step after the merge to get the `t()` to work again.  Basically, I was forcing the dataframe to transform all wierd, so I need to do the transformation without the gene names and add them later.  I still don't quite understand why it worked before though. 
+4.06.15 update: So I came back after a week to figure out what the problem is.  So basically I kept getting this "character" error and I traced it to the transformation `t()` step. I did some work and added another step after the merge to get the `t()` to work again.  Basically, I was forcing the data frame to transform all weird, so I need to do the transformation without the gene names and add them later.  I still don't quite understand why it worked before though. 
 
 `WGCNA.bootstrap.Ciera.03.27.15.b`
 
-This is one more attempt to get a Network with some usable information. This time I am going to use Yasus data.  Want to make network with *JUST cluster 35*.
+This is one more attempt to get a Network with some usable information. This time I am going to use Yasu's data.  Want to make network with *JUST cluster 35*.
 
 `WGCNA.bootstrap.Ciera.03.27.15`
 
@@ -47,24 +46,6 @@ use Dan Koenig's data. Now I am verifying what I did in WGNCNA.bootstrap.Ciera03
 Approach: The approach is to take the interesting clusters from the SOM and use Yasu's data to inform which genes are 1. major hubs for leaf primordia regulation and 2. Gene clusters of genes that could be working together. 
 
 `WGCNA.bootstrap.Ciera.11.21.14.tutorialGuided`: An attempt to follow the guide, but didn't go so well.
-
-
-Steps:
-1. Input Yasu's data `pnas.1402835111.sd01.csv`
-2. Input my data  `SOM_analysis9.5.csv` 
-3. Unput my data `superSOM_analysis8.csv`
-4. Merge with Yasu's data
-5. Perform Network analysis
-
-
-##Results
-
-The main problem is that after merging I go from 758 to only 152. It seems that those are the only genes that are in common between the genes I find interesting and Yasu's which is just insane. 
-
-I need to look into why.  Maybe use larger data set 
-
-
-
 
 ##References
 
