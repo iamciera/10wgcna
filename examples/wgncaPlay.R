@@ -4,7 +4,7 @@
 #source("http://bioconductor.org/biocLite.R") 
 #biocLite("impute") 
 
-library(WGNCA)
+library(WGCNA)
 
 
 ###Cleaning Data

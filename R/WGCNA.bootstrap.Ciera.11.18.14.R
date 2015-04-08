@@ -14,22 +14,24 @@ library(reshape)
 library(rgl)
 library(tcltk2)
 
-## because WGCNA with soft threshold need > 12 samples, 
-
+## because WGCNA with soft threshold need > 12 samples
+## pnas.1402835111.sd01.csv Yasu's data on leaf primordia
 counts <- read.csv("../data/pnas.1402835111.sd01.csv", header = TRUE)
 colnames(counts)
 #at this point do I need to get rid of all the hab and pen samples?
-#do I need to subset based on the genes I am interested in? Yes. 
+#First I need to subset based on the genes I am interested in form my analysis. 
+#The goal is to use Yasu's data to give insight into the genes I have found.
 
 #Read in lists of genes from both SOM and superSOM
-
+#SOM_analysis9.5.csv is the large WT only analysis.
 SOM <- read.csv("../../08SOM/lcmSOM/data/forNetwork/SOM_analysis9.5.csv", header = TRUE)
 colnames(SOM)
+
+#superSOM_analysis8.csv is the superSOM analysis
 superSOM <- read.csv("../../08SOM/lcmSOM/data/forNetwork/superSOM_analysis8.csv", header=TRUE)
 colnames(superSOM)
 
 #bring together lists from 
-
 SOMclusters <- rbind(superSOM, SOM)
 colnames(SOMclusters)
 
@@ -40,7 +42,6 @@ colnames(SOMclusters)[1] <- "Gene_ID"
 #First rename 1st column in counts to gene for merging
 
 colnames(counts)[1] <- "Gene_ID"
-colnames(counts)
 
 #Merge
 merged <- merge(SOMclusters, counts, by = "Gene_ID")
@@ -50,8 +51,6 @@ merged <- merge(SOMclusters, counts, by = "Gene_ID")
 dim(merged)
 countsUniq <- unique(merged)
 dim(countsUniq)
-head(countsUniq)
-rownames(countsUniq) 
 
 #Why did we lose over half.  There should not be duplicates within 
 #each type of cluster.  Check into this.
@@ -70,6 +69,7 @@ counts.t <- t(counts)
 str(counts.t)
 head(counts.t)
 
+#in Yasu's script, why is this used?
 #counts[, c(2:64)] <- sapply(counts[, c(2:64)], as.numeric)
 #counts.lt=t(log(counts+1)) 
 
@@ -108,48 +108,27 @@ for (i in 1:B){
   result[,i]<-rank(-hub.b)
 }
 
-#gene annotation from yasu script
-#annotation <- read.csv("Dodder_cdhitest95_TAIR_Blast2GO_annotation.csv", header=TRUE)
-#result.a<-merge(result.g,annotation, by.x="row.names", by.y="Sequence_name", all.x=T,sort=F)
-#write.csv(result.a,paste("boot",B,".WGCNA.hub.csv",sep=""))
-
 #Annotation Files
 annotation1<- read.delim("../../06diffGeneExp/analysis/data/ITAG2.3_all_Arabidopsis_ITAG_annotations.tsv", header=FALSE)  #Changed to the SGN human readable annotation
 colnames(annotation1) <- c("ITAG", "SGN_annotation")
 annotation2<- read.delim("../../06diffGeneExp/analysis/data/ITAG2.3_all_Arabidopsis_annotated.tsv")
 annotation <- merge(annotation1,annotation2, by = "ITAG")
-colnames(annotation)
-head(annotation)
-sub.annotation <- annotation[,c(1,4)]
-head(sub.annotation)
+sub.annotation <- annotation[,c(1,4)] #Choose what you want to name them by
 
-#If NA, replace with ITAG column!
- 
 # #Merge with genes then call which column of genes you want.
 table.genes <- as.data.frame(genes)
-dim(table.genes) #check first
-head(table.genes)
 colnames(table.genes) <- "ITAG"
 
 annotation.merge <- merge(table.genes,sub.annotation, by = "ITAG", all.x = TRUE)
-dim(annotation.merge) #compare and check with above.  
-head(annotation.merge)
 
-str(annotation.merge$symbol)
-is.na(annotation.merge$symbol)
-
+#If NA, replace with ITAG column
 annotation.merge$gene.name <- ifelse(is.na(annotation.merge$symbol), 
                                      annotation.merge$ITAG, 
                                      annotation.merge$symbol)
-  
-genes2 <- annotation.merge$gene.name
 
-head(genes2)
-
-genes <- genes2
+genes <-  annotation.merge$gene.name
 
 #Make Ranking
-head(result)
 row.names(result) <- genes
 average <- rowMeans(result)
 sd <- apply(result,1,function(d)sd(d))
@@ -158,11 +137,10 @@ result.n <- as.data.frame(result.n)
 result.g <- subset(result.n[,11:12])
 qplot(average, sd, data=result.g) 
 colnames(result.g) <- c("ave.rank","sd.rank")
-head(result.g,50)
 
 result.o <- result.g[order(result.g$ave.rank),]
 top.hub <- rownames(result.o[1:200,]) # top  hub genes
-top.hub
+
 # save
 save.image(file=paste("boot",B,".WGCNA.Rdata",sep=""))
 
@@ -177,25 +155,19 @@ TOM =TOMsimilarityFromExpr(counts.t,power=sft$powerEstimate) # power=14 shows R^
 colnames(TOM)=genes
 rownames(TOM)=genes
 
+dim(TOM)
+head(TOM,1)
+
 # extract top hub genes, this is where the NAs are occuring. 
-length(genes)
-length(top.hub)
-
-head(top.hub)
-head(genes)
-
 index.sub=is.element(genes, top.hub)
 subTOM=TOM[index.sub,index.sub]
-head(subTOM,40)
 
 # only strong interaction is shown
 h.subTOM = (subTOM>0.1)*subTOM # only > 0.1 TOM will be shown in network
 
 subnet = graph.adjacency(h.subTOM,mode="undirected",weighted=TRUE,diag=FALSE)
 
-
 between <- betweenness(subnet, normalized=TRUE)
-head(between)
 #between.a<-merge(between,annotation, by.x="row.names", by.y="Sequence_name", all.x=T,sort=F)
 #write.csv(between.a,"betweenness.csv")
 head(between[order(-between)])
